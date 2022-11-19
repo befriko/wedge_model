@@ -52,7 +52,6 @@ def ricker(cfreq, phase, dt, wvlt_length):
     
     t = np.arange(t_min, t_max, dt)
     
-    #t = np.linspace(-wvlt_length/2, (wvlt_length-dt)/2, np.rint(wvlt_length/dt).astype(int))
     t = np.linspace(-wvlt_length/2, (wvlt_length-dt)/2, int(wvlt_length/dt))
     wvlt = (1.0 - 2.0*(np.pi**2)*(cfreq**2)*(t**2)) * np.exp(-(np.pi**2)*(cfreq**2)*(t**2))
     
@@ -87,7 +86,6 @@ def wvlt_bpass(f1, f2, f3, f4, phase, dt, wvlt_length):
     from numpy.fft import fft, ifft, fftfreq, fftshift, ifftshift
     
     nsamp = int(wvlt_length/dt + 1)
-    #nsamp = np.rint(wvlt_length/dt + 1).astype(int)
     
     freq = fftfreq(nsamp, dt)
     freq = fftshift(freq)
@@ -146,8 +144,6 @@ def calc_rc(vp_mod, rho_mod):
     rc_int = calc_rc(vp_mod, rho_mod)
     '''
     
-    import numpy as np
-        
     nlayers = len(vp_mod)
     nint = nlayers - 1
     
@@ -165,8 +161,6 @@ def calc_times(z_int, vp_mod):
     '''
     t_int = calc_times(z_int, vp_mod)
     '''
-    
-    import numpy as np
     
     nlayers = len(vp_mod)
     nint = nlayers - 1
