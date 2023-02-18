@@ -206,3 +206,94 @@ def digitize_model(rc_int, t_int, t):
             break
             
     return rc
+
+
+def rc_zoep(vp1, vs1, rho1, vp2, vs2, rho2, theta1):
+    '''
+    Reflection & Transmission coefficients calculated using full Zoeppritz
+    equations.
+    
+    Usage:
+    ------
+    R = rc_zoep(vp1, vs1, rho1, vp2, vs2, rho2, theta1)
+    
+    Reference:
+    ----------
+    The Rock Physics Handbook, Dvorkin et al.
+    '''
+    
+    import numpy as np
+    import math
+    
+    # Cast inputs to floats
+    vp1  = float(vp1)
+    vp2  = float(vp2)
+    vs1  = float(vs1)
+    vs2  = float(vs2)
+    rho1 = float(rho1)
+    rho2 = float(rho2)
+    theta1 = float(theta1)
+    
+    # Calculate reflection & transmission angles
+    theta1 = math.radians(theta1)   # Convert theta1 to radians
+    p      = ray_param(vp1, math.degrees(theta1)) # Ray parameter
+    theta2 = math.asin(p*vp2);      # Transmission angle of P-wave
+    phi1   = math.asin(p*vs1);      # Reflection angle of converted S-wave
+    phi2   = math.asin(p*vs2);      # Transmission angle of converted S-wave
+    
+    # Matrix form of Zoeppritz Equations... M & N are two of the matricies
+    M = np.array([ \
+        [-math.sin(theta1), -math.cos(phi1), math.sin(theta2), math.cos(phi2)],\
+        [math.cos(theta1), -math.sin(phi1), math.cos(theta2), -math.sin(phi2)],\
+        [2*rho1*vs1*math.sin(phi1)*math.cos(theta1),\
+        rho1*vs1*(1-2*math.sin(phi1)**2),\
+        2*rho2*vs2*math.sin(phi2)*math.cos(theta2),\
+        rho2*vs2*(1-2*math.sin(phi2)**2)],\
+        [-rho1*vp1*(1-2*math.sin(phi1)**2), rho1*vs1*math.sin(2*phi1),\
+            rho2*vp2*(1-2*math.sin(phi2)**2), -rho2*vs2*math.sin(2*phi2)]
+        ], dtype='float')
+    
+    N = np.array([ \
+        [math.sin(theta1), math.cos(phi1), -math.sin(theta2), -math.cos(phi2)],\
+        [math.cos(theta1), -math.sin(phi1), math.cos(theta2), -math.sin(phi2)],\
+        [2*rho1*vs1*math.sin(phi1)*math.cos(theta1),\
+        rho1*vs1*(1-2*math.sin(phi1)**2),\
+        2*rho2*vs2*math.sin(phi2)*math.cos(theta2),\
+        rho2*vs2*(1-2*math.sin(phi2)**2)],\
+        [rho1*vp1*(1-2*math.sin(phi1)**2), -rho1*vs1*math.sin(2*phi1),\
+            -rho2*vp2*(1-2*math.sin(phi2)**2), rho2*vs2*math.sin(2*phi2)]\
+        ], dtype='float')
+    
+    # This is the important step, calculating coefficients for all modes and rays
+    R = np.dot(np.linalg.inv(M), N);
+    
+    return R
+
+
+def ray_param(v, theta):
+    '''
+    Calculates the ray parameter p
+    
+    Usage:
+    ------
+        p = ray_param(v, theta)
+    
+    Inputs:
+    -------
+            v = interval velocity
+        theta = incidence angle of ray (degrees)
+    
+    Output:
+    -------
+        p = ray parameter (i.e. sin(theta)/v )
+    '''
+    
+    import math
+    
+    # Cast inputs to floats
+    theta = float(theta)
+    v = float(v)
+    
+    p = math.sin(math.radians(theta))/v # ray parameter calculation
+    
+    return p
